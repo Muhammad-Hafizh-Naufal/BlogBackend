@@ -7,7 +7,7 @@ export const Blogs = db.define(
   "blogs",
   {
     title: DataTypes.STRING,
-    description: DataTypes.STRING,
+    description: DataTypes.TEXT,
     image: DataTypes.STRING,
     url: DataTypes.STRING,
   },

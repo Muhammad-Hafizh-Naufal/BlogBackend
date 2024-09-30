@@ -3,35 +3,68 @@ import { Blogs } from "../models/BlogModels.js";
 import fs from "fs";
 import path from "path";
 
+// Get all blogs
 export const getAllBlogs = async () => {
   return await Blogs.findAll();
 };
 
+// Get blog by ID
 export const getBlogById = async (id) => {
   return await Blogs.findOne({
     where: { id },
   });
 };
 
+// Add a new blog
 export const createBlog = async (title, description, file, protocol, host) => {
+  console.log("Creating blog with title:", title);
+  console.log("File details:", file);
+
   const fileSize = file.data.length;
   const ext = path.extname(file.name);
   const fileName = file.md5 + ext;
   const url = `${protocol}://${host}/images/${fileName}`;
   const allowedType = [".png", ".jpg", ".jpeg"];
 
+  console.log("File size:", fileSize);
+  console.log("File extension:", ext);
+  console.log("Generated file name:", fileName);
+  console.log("Generated URL:", url);
+
   if (!allowedType.includes(ext.toLowerCase())) {
+    console.log("Invalid file type");
     throw new Error("Invalid Image");
   }
   if (fileSize > 5000000) {
+    console.log("File size too large");
     throw new Error("Image must be less than 5 MB");
   }
 
-  file.mv(`./public/images/${fileName}`);
+  console.log("Moving file to:", `./public/images/${fileName}`);
+  try {
+    await file.mv(`./public/images/${fileName}`);
+  } catch (error) {
+    console.error("Error moving file:", error);
+    throw error;
+  }
 
-  return await Blogs.create({ title, description, image: fileName, url });
+  console.log("Creating blog entry in database");
+  try {
+    const blog = await Blogs.create({
+      title,
+      description,
+      image: fileName,
+      url,
+    });
+    console.log("Blog created successfully:", blog);
+    return blog;
+  } catch (error) {
+    console.error("Error creating blog in database:", error);
+    throw error;
+  }
 };
 
+// Update a blog
 export const updateBlog = async (
   id,
   title,
@@ -73,6 +106,7 @@ export const updateBlog = async (
   );
 };
 
+// Delete a blog
 export const deleteBlog = async (id) => {
   const blog = await Blogs.findOne({
     where: { id },

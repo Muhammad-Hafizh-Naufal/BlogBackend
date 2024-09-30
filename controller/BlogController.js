@@ -29,12 +29,24 @@ export const getBlogByid = async (req, res) => {
 };
 
 export const addBlogs = async (req, res) => {
-  if (req.files === null)
+  console.log("Received request to add blog");
+  console.log("Request body:", req.body);
+  console.log("Files:", req.files);
+
+  if (!req.files || !req.files.file) {
+    console.log("No file uploaded");
     return res.status(400).json({ message: "No File Uploaded" });
+  }
+
   const { title, description } = req.body;
-  const file = req.files.image;
+  const file = req.files.file;
+
+  console.log("Title:", title);
+  console.log("Description:", description);
+  console.log("File:", file.name);
 
   try {
+    console.log("Attempting to create blog");
     const blog = await createBlog(
       title,
       description,
@@ -42,8 +54,10 @@ export const addBlogs = async (req, res) => {
       req.protocol,
       req.get("host")
     );
+    console.log("Blog created successfully:", blog);
     res.status(201).json({ message: "Blog Created Successfully", blog });
   } catch (error) {
+    console.error("Error creating blog:", error);
     res.status(500).json({ message: error.message });
   }
 };
